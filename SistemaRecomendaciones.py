@@ -11,7 +11,6 @@ import logging
 from neo4j.exceptions import ServiceUnavailable
 from neo4j.work.simple import Query
 
-
 class App:
 
     # Inicio de la sesion, se conecta a la base de Neo4j
@@ -48,6 +47,8 @@ class App:
         %(Type_name, Device_name, Conexion_name, Modo_name, person1_name, game1_name, Company_name))
         print(query)
         result = tx.run(query, person1_name=person1_name, game1_name=game1_name)
+        '''Type_name=Type_name, Device_name=Device_name,
+         Company_name=Company_name, Modo_name=Modo_name, Conexion_name=Conexion_name'''
         print(result)
         try:
             return [{"p1": row["p1"]["name"], "g1": row["g1"]["name"]}
@@ -186,30 +187,28 @@ class App:
     def _find_and_return_persons(tx):
       query = (
         "MATCH (P:Person) "
-        "RETURN P"
+        "RETURN P.name AS name"
       )
       result = tx.run(query)
-      print(list(result))
+      #print(list(result))
       return [row["name"] for row in result]
 
     #Recomendaciones de dos categorias
-    def find_game_by_Two_Categories(self, category_one, category_two):
+    def find_game_by_Two_Categories(self, category_one, Relation_one, Type_One, category_two, Relation_two, Type_Two):
        with self.driver.session() as session:
-            result = session.read_transaction(self._find_game_by_Two_Categories, category_one, category_two)
+            result = session.read_transaction(self._find_game_by_Two_Categories, category_one, Relation_one, Type_One, category_two, Relation_two, Type_Two)
             for row in result:
                 print("Juegos recomendados que coinciden con las categorias: {p1}, {g1}".format(p1=row['p1'], g1=row['g1']))
 
     #Query para recomendar por medio de dos categorías
-    def _find_game_by_Two_Categories(tx, category_one, category_two):
+    def _find_game_by_Two_Categories(tx, category_one, Relation_one, Type_One, category_two, Relation_two, Type_Two):
         query = (
-            "MATCH (n:Game)-[:MODO]->(m:Modo {name: $category_two})"
-            "MATCH (n:Game)-[:GENERO]->(o:Type {name: $category_two})"
-            "MATCH (n:Game)-[:DESARROLLADO]->(o:Type {name: $category_two})"
-            "MATCH (n:Game)-[:DISPONIBLE_EN]->(o:Type {name: $category_two})"
-            "MATCH (n:Game)-[:CONEXION]->(o:Type {name: $category_two})"
-            "RETURN n"
-        )
-        result = tx.run(query, category_one=category_one, category_two=category_two)
+            "MATCH (n:Game)-[:%s]->(m:%s {name: %s}) "
+            "MATCH (n:Game)-[:%s]->(o:%s {name: %s}) "
+            "RETURN n.name AS name"
+        %(Relation_one, Type_One, category_1, Relation_two, Type_Two, category_2))
+        print(query)
+        result = tx.run(query, category_one, Relation_one, Type_One, category_two, Relation_two, Type_Two)
         return [row["name"] for row in result]
 
 
@@ -280,6 +279,8 @@ if __name__ == "__main__":
                     print('10) Aventura')
                     print('11) Peleas')
                     print('12) Battle Royale')
+                    print('13) Terror')
+                    print('14) Peleas')
 
                     print()
                     genero = int(input('Ingrese una opción: '))
@@ -307,6 +308,10 @@ if __name__ == "__main__":
                         Palabra_clave = 'Peleas'
                     elif genero == 12:
                         Palabra_clave = 'Battle Royale'
+                    elif genero == 13:
+                        Palabra_clave = 'Terror'
+                    elif genero == 14:
+                        Palabra_clave = 'Peleas'
                     else:
                         print()
                         print('Genero no encontrado')
@@ -385,7 +390,11 @@ if __name__ == "__main__":
                     print('10) Rockstar Games')
                     print('11) Psyonix')
                     print('12) Electronics Arts')
-
+                    print('13) Valve Corporation')
+                    print('14) Blizzard Entertainment')
+                    print('15) NetherRealm Studios')
+                    print('16) Capcom')
+                    
                     print()
                     ceo = int(input('Ingrese una opción: '))
                     if ceo == 1:
@@ -412,6 +421,15 @@ if __name__ == "__main__":
                         Palabra_clave = 'Psyonix'
                     elif ceo == 12:
                         Palabra_clave = 'Electronics Arts'
+                    elif ceo == 13:
+                        Palabra_clave = 'Valve Corporation'
+                    elif ceo == 14:
+                        Palabra_clave = 'Blizzard Entertainment'
+                    elif ceo == 15:
+                        Palabra_clave = 'NetherRealm Studios'
+                    elif ceo == 16:
+                        Palabra_clave = 'Capcom'
+
                     else:
                         print()
                         print('Compania no encontrado')
@@ -522,11 +540,242 @@ if __name__ == "__main__":
         print()
 
         print('---Categorias disponibles---')
-        print('1) Por Tipo / Genero')
-        print('2) Por Dispositivo')
-        print('3) Por Compania')
-        print('4) Por Conexion')
-        print('5) Por Jugabilidad')
+        print('A) Por Tipo / Genero')
+        print('\t1) FPS')
+        print('\t2) ARPG')
+        print('\t3) MOBA')
+        print('\t4) Mundo abierto')
+        print('\t5) Carreras')
+        print('\t6) Party')
+        print('\t7) Estrategia')
+        print('\t8) Deportes')
+        print('\t9) Accion')
+        print('\t10) Aventura')
+        print('\t11) Peleas')
+        print('\t12) Battle Royale')
+        print('\t13) Terror')
+        print('\t14) Peleas')
+
+        print('B) Por Dispositivo')
+        print('\t1) Playstation 4-5')
+        print('\t2) Xbox One S-Series X')
+        print('\t3) Android/IOS')
+        print('\t4) PC')
+        print('\t5) Nintendo Switch')
+        
+        print('C) Por Conexion')
+        print('\t1) Conexion Online')
+        print('\t2) Conexion Offline')
+
+        print('D) Por Jugabilidad')
+        print('\t1) Singleplayer')
+        print('\t2) Multiplayer')
+        
+        print()
+        
+        try:
+            category_1 = ''
+            Relacion_1 = ''
+            Tipo_1 = ''
+            category_2 = ''
+            Relacion_2 = ''
+            Tipo_2 = ''
+            
+            print('Ingresar codigo de categoria (Ejemplo: Conexion Online = D1 || Siempre en mayúsculas)')
+            print()
+            Cate1 = input('Categoria#1: ')
+            if Cate1 == 'A1':
+                category_1 = 'FPS'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A2':
+                category_1 = 'ARPG'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A3':
+                category_1 = 'MOBA'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A4':
+                category_1 = 'Mundo abierto'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A5':
+                category_1 = 'Carreras'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A6':
+                category_1 = 'Party'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A7':
+                category_1 = 'Estrategia'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A8':
+                category_1 = 'Deportes'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A9':
+                category_1 = 'Accion'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A10':
+                category_1 = 'Aventura'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A11':
+                category_1 = 'Peleas'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+            elif Cate1 == 'A12':
+                category_1 = 'Battle Royale'
+                Relacion_1 = 'GENERO'
+                Tipo_1 = 'Type'
+                
+            elif Cate1 == 'B1':
+                category_1 = 'Playstation 4-5'
+                Relacion_1 = 'DISPONIBLE_EN'
+                Tipo_1 = 'Device'
+            elif Cate1 == 'B2':
+                category_1 = 'Xbox One S-Series X'
+                Relacion_1 = 'DISPONIBLE_EN'
+                Tipo_1 = 'Device'
+            elif Cate1 == 'B3':
+                category_1 = 'Android/IOS'
+                Relacion_1 = 'DISPONIBLE_EN'
+                Tipo_1 = 'Device'
+            elif Cate1 == 'B4':
+                category_1 = 'PC'
+                Relacion_1 = 'DISPONIBLE_EN'
+                Tipo_1 = 'Device'
+            elif Cate1 == 'B5':
+                category_1 = 'Nintendo Switch'
+                Relacion_1 = 'DISPONIBLE_EN'
+                Tipo_1 = 'Device'
+                
+            elif Cate1 == 'C1':
+                category_1 = 'Online'
+                Relacion_1 = 'CONEXION'
+                Tipo_1 = 'Conection'
+            elif Cate1 == 'C2':
+                category_1 = 'Offline'
+                Relacion_1 = 'CONEXION'
+                Tipo_1 = 'Conection'
+                
+            elif Cate1 == 'D1':
+                category_1 = 'Singleplayer'
+                Relacion_1 = 'MODO'
+                Tipo_1 = 'Modo'
+            elif Cate1 == 'D2':
+                category_1 = 'Multiplayer'
+                Relacion_1 = 'MODO'
+                Tipo_1 = 'Modo' 
+            
+            Cate2 = input('Categoria#2: ')
+            if Cate2 == 'A1':
+                category_2 = 'FPS'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A2':
+                category_2 = 'ARPG'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A3':
+                category_2 = 'MOBA'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A4':
+                category_2 = 'Mundo abierto'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A5':
+                category_2 = 'Carreras'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A6':
+                category_2 = 'Party'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A7':
+                category_2 = 'Estrategia'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A8':
+                category_2 = 'Deportes'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A9':
+                category_2 = 'Accion'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A10':
+                category_2 = 'Aventura'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A11':
+                category_2 = 'Peleas'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+            elif Cate2 == 'A12':
+                category_2 = 'Battle Royale'
+                Relacion_2 = 'GENERO'
+                Tipo_2 = 'Type'
+                
+            elif Cate2 == 'B1':
+                category_2 = 'Playstation 4-5'
+                Relacion_2 = 'DISPONIBLE_EN'
+                Tipo_2 = 'Device'
+            elif Cate2 == 'B2':
+                category_2 = 'Xbox One S-Series X'
+                Relacion_2 = 'DISPONIBLE_EN'
+                Tipo_2 = 'Device'
+            elif Cate2 == 'B3':
+                category_2 = 'Android/IOS'
+                Relacion_2 = 'DISPONIBLE_EN'
+                Tipo_2 = 'Device'
+            elif Cate2 == 'B4':
+                category_2 = 'PC'
+                Relacion_2 = 'DISPONIBLE_EN'
+                Tipo_2 = 'Device'
+            elif Cate2 == 'B5':
+                category_2 = 'Nintendo Switch'
+                Relacion_2 = 'DISPONIBLE_EN'
+                Tipo_2 = 'Device'
+                
+            elif Cate2 == 'C1':
+                category_2 = 'Online'
+                Relacion_2 = 'CONEXION'
+                Tipo_2 = 'Conection'
+            elif Cate2 == 'C2':
+                category_2 = 'Offline'
+                Relacion_2 = 'CONEXION'
+                Tipo_2 = 'Conection'
+                
+            elif Cate2 == 'D1':
+                category_2 = 'Singleplayer'
+                Relacion_2 = 'MODO'
+                Tipo_2 = 'Modo'
+            elif Cate2 == 'D2':
+                category_2 = 'Multiplayer'
+                Relacion_2 = 'MODO'
+                Tipo_2 = 'Modo'
+                
+            print()
+            print('Categorias seleccionadas: ')
+            print('Categoria#1: '+category_1)
+            print('Categoria#2: '+category_2)
+            print()
+            print('Relaciones que representan: ')
+            print('Relacion#1: '+Relacion_1)
+            print('Relacion#2: '+Relacion_2)
+            print()
+            
+            app.find_game_by_Two_Categories(category_1, Relacion_1, category_2, Relacion_2)
+
+        except:
+            print()
+            print('Algo ha salido mal')
 
       except:
         print('La opción que ingresó no existe')
@@ -696,14 +945,15 @@ if __name__ == "__main__":
             print()
             print('Para eliminar una nueva relacion necesito algunos datos')
             print('Esta eliminación será unicamente de otras recomendaciones para no afectar la base de datos original')
+            print('Se mostraran todos los usuarios que han realizado alguna recomendacion')
+            print()
 
             app.find_persons()
 
             print()
-            NombU = input('Apodo del usuario que realizo recomendaciones: ')
+            NombU = input('Apodo del usuario que realizo recomendaciones (Escriba el nombre correctamente): ')
             print()
             app.delete_relationship(NombU)
-            print()
         except:
             print('La opción que ingresó no existe')
             print()
